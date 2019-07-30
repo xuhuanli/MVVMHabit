@@ -55,8 +55,6 @@ public abstract class BaseActivity<V extends ViewDataBinding, VM extends BaseVie
         super.onDestroy();
         //解除Messenger注册
         Messenger.getDefault().unregister(viewModel);
-        //解除ViewModel生命周期感应
-        getLifecycle().removeObserver(viewModel);
         if (viewModel != null) {
             viewModel.removeRxBus();
         }
@@ -104,7 +102,7 @@ public abstract class BaseActivity<V extends ViewDataBinding, VM extends BaseVie
      * =====================================================================
      **/
     //注册ViewModel与View的契约UI回调事件
-    private void registorUIChangeLiveDataCallBack() {
+    protected void registorUIChangeLiveDataCallBack() {
         //加载对话框显示
         viewModel.getUC().getShowDialogEvent().observe(this, new Observer<String>() {
             @Override

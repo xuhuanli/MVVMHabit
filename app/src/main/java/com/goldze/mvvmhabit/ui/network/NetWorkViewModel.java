@@ -2,7 +2,6 @@ package com.goldze.mvvmhabit.ui.network;
 
 import android.app.Application;
 import android.databinding.ObservableArrayList;
-import android.databinding.ObservableBoolean;
 import android.databinding.ObservableList;
 import android.support.annotation.NonNull;
 
@@ -35,9 +34,9 @@ public class NetWorkViewModel extends BaseViewModel<DemoRepository> {
 
     public class UIChangeObservable {
         //下拉刷新完成
-        public ObservableBoolean finishRefreshing = new ObservableBoolean(false);
+        public SingleLiveEvent finishRefreshing = new SingleLiveEvent<>();
         //上拉加载完成
-        public ObservableBoolean finishLoadmore = new ObservableBoolean(false);
+        public SingleLiveEvent finishLoadmore = new SingleLiveEvent<>();
     }
 
     public NetWorkViewModel(@NonNull Application application, DemoRepository repository) {
@@ -62,11 +61,11 @@ public class NetWorkViewModel extends BaseViewModel<DemoRepository> {
         public void call() {
             if (observableList.size() > 50) {
                 ToastUtils.showLong("兄dei，你太无聊啦~崩是不可能的~");
-                uc.finishLoadmore.set(!uc.finishLoadmore.get());
+                uc.finishLoadmore.call();
                 return;
             }
             //模拟网络上拉加载更多
-            addSubscribe(model.simulationLoadMore()
+            addSubscribe(model.loadMore()
                     .compose(RxUtils.schedulersTransformer()) //线程调度
                     .doOnSubscribe(new Consumer<Disposable>() {
                         @Override
@@ -83,7 +82,7 @@ public class NetWorkViewModel extends BaseViewModel<DemoRepository> {
                                 observableList.add(itemViewModel);
                             }
                             //刷新完成收回
-                            uc.finishLoadmore.set(!uc.finishLoadmore.get());
+                            uc.finishLoadmore.call();
                         }
                     }));
         }
@@ -93,7 +92,7 @@ public class NetWorkViewModel extends BaseViewModel<DemoRepository> {
      * 网络请求方法，在ViewModel中调用Model层，通过Okhttp+Retrofit+RxJava发起请求
      */
     public void requestNetWork() {
-        //建议使用addSubscribe()套一层，请求与View周期同步
+        //建议调用addSubscribe()添加Disposable，请求与View周期同步
         //addSubscribe();
         model.demoGet()
                 .compose(RxUtils.bindToLifecycle(getLifecycleProvider())) //请求与View周期同步（过度期，尽量少使用）
@@ -122,14 +121,16 @@ public class NetWorkViewModel extends BaseViewModel<DemoRepository> {
                             ToastUtils.showShort("数据错误");
                         }
                     }
-                }, new Consumer<ResponseThrowable>() {
+                }, new Consumer<Throwable>() {
                     @Override
-                    public void accept(ResponseThrowable throwable) throws Exception {
+                    public void accept(Throwable throwable) throws Exception {
                         //关闭对话框
                         dismissDialog();
                         //请求刷新完成收回
-                        uc.finishRefreshing.set(!uc.finishRefreshing.get());
-                        ToastUtils.showShort(throwable.message);
+                        uc.finishRefreshing.call();
+                        if (throwable instanceof ResponseThrowable) {
+                            ToastUtils.showShort(((ResponseThrowable) throwable).message);
+                        }
                     }
                 }, new Action() {
                     @Override
@@ -137,7 +138,7 @@ public class NetWorkViewModel extends BaseViewModel<DemoRepository> {
                         //关闭对话框
                         dismissDialog();
                         //请求刷新完成收回
-                        uc.finishRefreshing.set(!uc.finishRefreshing.get());
+                        uc.finishRefreshing.call();
                     }
                 });
     }

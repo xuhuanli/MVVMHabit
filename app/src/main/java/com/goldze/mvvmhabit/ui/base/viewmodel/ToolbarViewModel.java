@@ -6,6 +6,7 @@ import android.databinding.ObservableInt;
 import android.support.annotation.NonNull;
 import android.view.View;
 
+import me.goldze.mvvmhabit.base.BaseModel;
 import me.goldze.mvvmhabit.base.BaseViewModel;
 import me.goldze.mvvmhabit.binding.command.BindingAction;
 import me.goldze.mvvmhabit.binding.command.BindingCommand;
@@ -18,7 +19,7 @@ import me.goldze.mvvmhabit.binding.command.BindingCommand;
  * 所有例子仅做参考,业务多种多样,可能我这里写的例子和你的需求不同，理解如何使用才最重要。
  */
 
-public class ToolbarViewModel extends BaseViewModel {
+public class ToolbarViewModel<M extends BaseModel> extends BaseViewModel<M> {
     //标题文字
     public ObservableField<String> titleText = new ObservableField<>("");
     //右边文字
@@ -27,9 +28,16 @@ public class ToolbarViewModel extends BaseViewModel {
     public ObservableInt rightTextVisibleObservable = new ObservableInt(View.GONE);
     //右边图标的观察者
     public ObservableInt rightIconVisibleObservable = new ObservableInt(View.GONE);
+    //兼容databinding，去泛型化
+    public ToolbarViewModel toolbarViewModel;
 
     public ToolbarViewModel(@NonNull Application application) {
-        super(application);
+        this(application, null);
+    }
+
+    public ToolbarViewModel(@NonNull Application application, M model) {
+        super(application, model);
+        toolbarViewModel = this;
     }
 
     /**

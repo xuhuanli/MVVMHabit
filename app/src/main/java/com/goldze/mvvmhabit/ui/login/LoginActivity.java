@@ -11,7 +11,6 @@ import com.goldze.mvvmhabit.BR;
 import com.goldze.mvvmhabit.R;
 import com.goldze.mvvmhabit.app.AppViewModelFactory;
 import com.goldze.mvvmhabit.databinding.ActivityLoginBinding;
-import com.goldze.mvvmhabit.ui.network.NetWorkViewModel;
 
 import me.goldze.mvvmhabit.base.BaseActivity;
 
@@ -32,7 +31,7 @@ public class LoginActivity extends BaseActivity<ActivityLoginBinding, LoginViewM
 
     @Override
     public LoginViewModel initViewModel() {
-        //View持有ViewModel的引用，如果没有特殊业务处理，这个方法可以不重写
+        //使用自定义的ViewModelFactory来创建ViewModel，如果不重写该方法，则默认会调用LoginViewModel(@NonNull Application application)构造方法
         AppViewModelFactory factory = AppViewModelFactory.getInstance(getApplication());
         return ViewModelProviders.of(this, factory).get(LoginViewModel.class);
     }
@@ -47,11 +46,11 @@ public class LoginActivity extends BaseActivity<ActivityLoginBinding, LoginViewM
                 if (viewModel.uc.pSwitchEvent.getValue()) {
                     //密码可见
                     //在xml中定义id后,使用binding可以直接拿到这个view的引用,不再需要findViewById去找控件了
-                    binding.ivSwichPasswrod.setImageResource(R.mipmap.show_psw_press);
+                    binding.ivSwichPasswrod.setImageResource(R.mipmap.show_psw);
                     binding.etPassword.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
                 } else {
                     //密码不可见
-                    binding.ivSwichPasswrod.setImageResource(R.mipmap.show_psw);
+                    binding.ivSwichPasswrod.setImageResource(R.mipmap.show_psw_press);
                     binding.etPassword.setTransformationMethod(PasswordTransformationMethod.getInstance());
                 }
             }
